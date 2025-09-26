@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ReactFlow, {
+import {
+  ReactFlow,
   Background,
   Connection,
   Controls,
@@ -13,13 +14,14 @@ import ReactFlow, {
   useNodesState,
   ReactFlowProvider,
   useReactFlow
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { FlowDefinition, FlowMetadata, FlowVariable, NodeType } from '../model/flow';
 import { nodeSchemas } from '../model/nodeDefinitions';
 import { flowToReact, reactToFlow, flowNodeToReactNode } from './transformers';
 import { DesignerNodeData } from './types';
 import FlowNode from '../nodes/FlowNode';
+import FlowNodeWithLabels from '../nodes/FlowNodeWithLabels';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -38,7 +40,10 @@ export interface FlowEditorProps {
   showMetadata?: boolean;
 }
 
-const nodeTypes = { flowNode: FlowNode };
+const nodeTypes = {
+  flowNode: FlowNode,
+  flowNodeWithLabels: FlowNodeWithLabels
+};
 
 type FlowMeta = Omit<FlowDefinition, 'nodes' | 'edges'>;
 
@@ -299,13 +304,13 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
 }) => {
   const [meta, setMeta] = useState<FlowMeta>(() => extractMeta(initialFlow));
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => flowToReact(initialFlow), [initialFlow]);
-  const [nodes, setNodes, onNodesChange] = useNodesState<DesignerNodeData>(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [layoutInitialized, setLayoutInitialized] = useState<boolean>(() => isLayoutInitialized(initialNodes));
+  const [, setLayoutInitialized] = useState<boolean>(() => isLayoutInitialized(initialNodes));
   const [isLayouting, setIsLayouting] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const reactFlow = useReactFlow<DesignerNodeData>();
+  const reactFlow = useReactFlow();
   const flowWrapperRef = useRef<HTMLDivElement | null>(null);
   const layoutingRef = useRef(false);
   const layoutAttemptedRef = useRef(false);
@@ -357,12 +362,12 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
   }, [meta, onFlowChange]);
 
   const handleNodesChange: OnNodesChange = useCallback(
-    (changes) => {
+    (changes: any) => {
       // Apply changes to React Flow immediately for smooth visual feedback
       onNodesChange(changes);
 
       // Check for dragging
-      const isDragging = changes.some(change =>
+      const isDragging = changes.some((change: any) =>
         change.type === 'position' && change.dragging === true
       );
 
@@ -371,7 +376,7 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
         return; // Skip everything during drag for performance
       }
 
-      const dragEnded = changes.some(change =>
+      const dragEnded = changes.some((change: any) =>
         change.type === 'position' && change.dragging === false
       );
 
@@ -382,7 +387,7 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
       }
 
       // Only update model for non-position changes
-      const hasNonPositionChanges = changes.some(change =>
+      const hasNonPositionChanges = changes.some((change: any) =>
         change.type !== 'position' && change.type !== 'select'
       );
 
@@ -404,8 +409,8 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
       }
 
       // Only update model for structural changes
-      const hasStructuralChanges = changes.some(change =>
-        change.type === 'add' || change.type === 'remove' || change.type === 'reset'
+      const hasStructuralChanges = changes.some((change: any) =>
+        change.type === 'add' || change.type === 'remove'
       );
 
       if (hasStructuralChanges) {
@@ -666,7 +671,7 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
-                nodeTypes={nodeTypes}
+                nodeTypes={nodeTypes as any}
                 onNodesChange={handleNodesChange}
                 onEdgesChange={handleEdgesChange}
                 onConnect={onConnect}

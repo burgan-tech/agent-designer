@@ -1,7 +1,7 @@
 import { NodeSchema } from '../model/nodeSchemas';
 import { NodeType } from '../model/flow';
 
-export interface DesignerNodeData {
+export interface DesignerNodeData extends Record<string, unknown> {
   id: string;
   type: NodeType;
   title: string;

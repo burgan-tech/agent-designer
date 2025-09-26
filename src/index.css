@@ -140,49 +140,29 @@
   width: 100%;
 }
 
-.react-flow__node-flowNode {
-  border-radius: calc(var(--radius) - 4px);
-  border: 1.5px solid rgb(var(--border));
-  padding: 0.6rem;
-  background-color: white;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
-  width: 180px;
-  min-height: 60px;
-  height: auto;
-  /* Removed transition for better drag performance */
-}
-
-/* Special styling for decision tree nodes to grow with content */
-.react-flow__node-flowNode[data-node-type="decision_tree"] {
+.react-flow__node-flowNodeWithLabels {
+  /* Most styling is now handled by BaseNode component */
   width: 200px;
-  /* Height is dynamically set in component based on outputs */
 }
 
-.react-flow__node-flowNode:hover {
-  border-color: rgb(var(--ring));
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
-  transform: translateY(-1px);
-}
-
-.react-flow__node-flowNode.selected {
-  border-color: rgb(var(--primary));
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
-  background-color: rgba(239, 246, 255, 0.5);
+/* Selected node styling */
+.react-flow__node.selected .react-flow__node-flowNodeWithLabels {
+  box-shadow: 0 0 0 2px rgb(var(--primary)) !important;
 }
 
 .react-flow__handle {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 9999px;
   border: 2px solid white;
   background-color: rgb(var(--primary));
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
-  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.15s ease;
 }
 
 .react-flow__handle:hover {
-  transform: scale(1.2);
-  box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4);
+  transform: scale(1.3);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.5);
 }
 
 .react-flow__handle.react-flow__handle-top,
@@ -312,18 +292,21 @@
 /* Edge styling */
 .react-flow__edge-path {
   stroke: rgb(var(--primary));
-  stroke-width: 2.5px;
+  stroke-width: 3px;
   fill: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .react-flow__edge.selected .react-flow__edge-path {
   stroke: rgb(var(--ring));
-  stroke-width: 3px;
+  stroke-width: 4px;
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
   stroke: rgb(var(--ring));
-  stroke-width: 3px;
+  stroke-width: 4px;
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
 }
 
 .react-flow__edge-textbg {

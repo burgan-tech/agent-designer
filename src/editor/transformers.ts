@@ -1,4 +1,4 @@
-import { Edge, Node } from 'reactflow';
+import { Edge, Node } from '@xyflow/react';
 import { FlowDefinition, FlowEdge, FlowNode } from '../model/flow';
 import { nodeSchemas } from '../model/nodeDefinitions';
 import { DesignerNodeData } from './types';
@@ -11,7 +11,7 @@ export function flowNodeToReactNode(flowNode: FlowNode): Node<DesignerNodeData> 
   const inputs = schema.computeInputs?.(flowNode.properties) ?? (outputs.length ? [] : ['previous']);
   return {
     id: flowNode.id,
-    type: 'flowNode',
+    type: 'flowNodeWithLabels',
     position: flowNode.position,
     data: {
       id: flowNode.id,

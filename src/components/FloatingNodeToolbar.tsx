@@ -1,5 +1,5 @@
 import React from 'react';
-import { Panel } from 'reactflow';
+import { Panel } from '@xyflow/react';
 import { nodeSchemas } from '../model/nodeDefinitions';
 import { NodeType } from '../model/flow';
 import { nodeIcons } from '../constants/nodeIcons';

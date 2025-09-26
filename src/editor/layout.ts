@@ -1,19 +1,21 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
-import type { Edge, Node } from 'reactflow';
+import type { Edge, Node } from '@xyflow/react';
 import type { DesignerNodeData } from './types';
 
 const elk = new ELK();
 
-const DEFAULT_NODE_WIDTH = 240;
-const DEFAULT_NODE_HEIGHT = 160;
+const DEFAULT_NODE_WIDTH = 200;
+const DEFAULT_NODE_HEIGHT = 120;
 
 const LAYOUT_OPTIONS = {
   'elk.algorithm': 'layered',
   'elk.direction': 'RIGHT',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '120',
-  'elk.layered.spacing.edgeNodeBetweenLayers': '60',
-  'elk.spacing.nodeNode': '80',
-  'elk.spacing.componentComponent': '120'
+  'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+  'elk.layered.spacing.edgeNodeBetweenLayers': '30',
+  'elk.spacing.nodeNode': '40',
+  'elk.spacing.componentComponent': '60',
+  'elk.layered.spacing.inLayerSpacingFactor': '0.5',
+  'elk.layered.compaction.connectedComponents': 'true'
 };
 
 type ElkLayoutNode = {
