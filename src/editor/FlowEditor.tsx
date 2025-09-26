@@ -108,130 +108,152 @@ const FlowMetadataForm: React.FC<{
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Flow Bilgileri</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="meta-form-grid">
-          <div className="space-y-1">
-            <Label>Flow ID</Label>
-            <Input value={meta.flowId} onChange={(event) => updateField('flowId', event.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>Ad</Label>
-            <Input value={meta.name} onChange={(event) => updateField('name', event.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>Versiyon</Label>
-            <Input value={meta.version} onChange={(event) => updateField('version', event.target.value)} />
-          </div>
-        </div>
-        <div className="space-y-1">
-          <Label>Açıklama</Label>
-          <Textarea
-            value={meta.description ?? ''}
-            onChange={(event) => updateField('description', event.target.value)}
-          />
-        </div>
-        <div className="meta-form-grid">
-          <div className="space-y-1">
-            <Label>Kategori</Label>
-            <Input
-              value={meta.metadata?.category ?? ''}
-              onChange={(event) => updateMetadata('category', event.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>Yazar</Label>
-            <Input
-              value={meta.metadata?.author ?? ''}
-              onChange={(event) => updateMetadata('author', event.target.value)}
-            />
-          </div>
-        </div>
-        <div className="space-y-1">
-          <Label>Etiketler</Label>
-          <Input
-            value={(meta.metadata?.tags ?? []).join(', ')}
-            onChange={(event) =>
-              updateMetadata(
-                'tags',
-                event.target.value.split(',').map((tag) => tag.trim()).filter(Boolean)
-              )
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Tetikleyiciler</Label>
-          <Textarea
-            value={(meta.triggers ?? []).join('\n')}
-            onChange={(event) => updateField('triggers', event.target.value.split('\n').filter(Boolean))}
-            placeholder={'kredi başvurusu\nkredi almak istiyorum'}
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Değişkenler</Label>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() =>
-                updateVariables(`variable_${variableEntries.length + 1}`, {
-                  name: `variable_${variableEntries.length + 1}`,
-                  type: 'string',
-                  default: ''
-                })
-              }
-            >
-              + Değişken
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {variableEntries.map(([name, variable]) => (
-              <div key={name} className="rounded-md border border-slate-200 p-3 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <Input
-                    value={variable.name}
-                    onChange={(event) =>
-                      updateVariables(name, {
-                        ...variable,
-                        name: event.target.value
-                      })
-                    }
-                  />
-                  <Select
-                    value={variable.type}
-                    onChange={(event) =>
-                      updateVariables(name, {
-                        ...variable,
-                        type: event.target.value as FlowVariable['type']
-                      })
-                    }
-                    options={[
-                      { label: 'String', value: 'string' },
-                      { label: 'Number', value: 'number' },
-                      { label: 'Boolean', value: 'boolean' },
-                      { label: 'Object', value: 'object' }
-                    ]}
-                  />
-                  <Button type="button" variant="ghost" onClick={() => updateVariables(name, null)}>
-                    Sil
-                  </Button>
-                </div>
+      <CardContent className="p-0">
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="info">Akış Bilgileri</TabsTrigger>
+            <TabsTrigger value="variables">Değişkenler</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="info" className="p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Flow ID</Label>
+                <Input value={meta.flowId} onChange={(event) => updateField('flowId', event.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Ad</Label>
+                <Input value={meta.name} onChange={(event) => updateField('name', event.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Versiyon</Label>
+                <Input value={meta.version} onChange={(event) => updateField('version', event.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Açıklama</Label>
+              <Textarea
+                value={meta.description ?? ''}
+                onChange={(event) => updateField('description', event.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Kategori</Label>
                 <Input
-                  placeholder="Varsayılan değer"
-                  value={String(variable.default ?? '')}
-                  onChange={(event) =>
-                    updateVariables(name, {
-                      ...variable,
-                      default: event.target.value
-                    })
-                  }
+                  value={meta.metadata?.category ?? ''}
+                  onChange={(event) => updateMetadata('category', event.target.value)}
                 />
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="space-y-2">
+                <Label>Yazar</Label>
+                <Input
+                  value={meta.metadata?.author ?? ''}
+                  onChange={(event) => updateMetadata('author', event.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Etiketler</Label>
+              <Input
+                value={(meta.metadata?.tags ?? []).join(', ')}
+                onChange={(event) =>
+                  updateMetadata(
+                    'tags',
+                    event.target.value.split(',').map((tag) => tag.trim()).filter(Boolean)
+                  )
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tetikleyiciler</Label>
+              <Textarea
+                value={(meta.triggers ?? []).join('\n')}
+                onChange={(event) => updateField('triggers', event.target.value.split('\n').filter(Boolean))}
+                placeholder={'kredi başvurusu\nkredi almak istiyorum'}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="variables" className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Değişkenler</h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  updateVariables(`variable_${variableEntries.length + 1}`, {
+                    name: `variable_${variableEntries.length + 1}`,
+                    type: 'string',
+                    default: ''
+                  })
+                }
+              >
+                + Değişken
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {variableEntries.map(([name, variable]) => (
+                <Card key={name}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <Input
+                        value={variable.name}
+                        onChange={(event) =>
+                          updateVariables(name, {
+                            ...variable,
+                            name: event.target.value
+                          })
+                        }
+                      />
+                      <Select
+                        value={variable.type}
+                        onChange={(event) =>
+                          updateVariables(name, {
+                            ...variable,
+                            type: event.target.value as FlowVariable['type']
+                          })
+                        }
+                        options={[
+                          { label: 'String', value: 'string' },
+                          { label: 'Number', value: 'number' },
+                          { label: 'Boolean', value: 'boolean' },
+                          { label: 'Object', value: 'object' }
+                        ]}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateVariables(name, null)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        Sil
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Varsayılan değer"
+                      value={String(variable.default ?? '')}
+                      onChange={(event) =>
+                        updateVariables(name, {
+                          ...variable,
+                          default: event.target.value
+                        })
+                      }
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+              {variableEntries.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Henüz değişken eklenmemiş</p>
+                  <p className="text-sm">Yeni değişken eklemek için yukarıdaki butonu kullanın</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
@@ -241,7 +263,8 @@ const FlowMetadataForm: React.FC<{
 const NodeInspector: React.FC<{
   node: Node<DesignerNodeData> | null;
   onChange: (properties: any) => void;
-}> = ({ node, onChange }) => {
+  variables?: Record<string, FlowVariable>;
+}> = ({ node, onChange, variables }) => {
   if (!node) {
     return (
       <Card>
@@ -249,7 +272,7 @@ const NodeInspector: React.FC<{
           <CardTitle>Node Özellikleri</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-500">Bir node seçerek özelliklerini düzenleyin.</p>
+          <p className="text-sm text-muted-foreground">Bir node seçerek özelliklerini düzenleyin.</p>
         </CardContent>
       </Card>
     );
@@ -263,7 +286,7 @@ const NodeInspector: React.FC<{
         <CardTitle>{schema.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <SchemaForm schema={schema} value={node.data.properties} onChange={onChange} />
+        <SchemaForm schema={schema} value={node.data.properties} onChange={onChange} variables={variables} />
       </CardContent>
     </Card>
   );
@@ -285,67 +308,158 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
   const reactFlow = useReactFlow<DesignerNodeData>();
   const flowWrapperRef = useRef<HTMLDivElement | null>(null);
   const layoutingRef = useRef(false);
+  const layoutAttemptedRef = useRef(false);
+  const isDraggingRef = useRef(false);
+
+  const lastFlowIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Simple check to prevent re-initialization of the same flow
+    if (lastFlowIdRef.current === initialFlow.flowId) {
+      console.log('Skipping flow update - same flowId');
+      return;
+    }
+
+    console.log('FlowEditor initialFlow changed:', initialFlow);
+    console.log('Setting nodes to initialNodes:', initialNodes);
+    console.log('Setting edges to initialEdges:', initialEdges);
+
+    // Reset layout attempt flag for new flows
+    layoutAttemptedRef.current = false;
+
     setMeta(extractMeta(initialFlow));
     setNodes(initialNodes);
     setEdges(initialEdges);
     setSelectedNodeId(null);
     setLayoutInitialized(isLayoutInitialized(initialNodes));
-  }, [initialFlow, initialNodes, initialEdges, setNodes, setEdges]);
 
-  useEffect(() => {
-    const definition = createFlowDefinition(meta, nodes, edges);
-    onFlowChange?.(definition);
-  }, [meta, nodes, edges, onFlowChange]);
+    // Remember this flow ID to prevent unnecessary re-initialization
+    lastFlowIdRef.current = initialFlow.flowId;
+  }, [initialFlow, initialNodes, initialEdges]);
+
+  
+
+  // Helper function to update flow model with fresh state
+  const updateFlowModel = useCallback((reason: string) => {
+    console.log(`Updating flow model: ${reason}`);
+
+    // Get fresh state from React Flow instead of using stale closures
+    setNodes((currentNodes) => {
+      setEdges((currentEdges) => {
+        const definition = createFlowDefinition(meta, currentNodes, currentEdges);
+        if (onFlowChange) {
+          onFlowChange(definition);
+        }
+        return currentEdges;
+      });
+      return currentNodes;
+    });
+  }, [meta, onFlowChange]);
 
   const handleNodesChange: OnNodesChange = useCallback(
     (changes) => {
+      // Apply changes to React Flow immediately for smooth visual feedback
       onNodesChange(changes);
-      setNodes((nds) =>
-        nds.map((node) => {
-          const schema = nodeSchemas[node.data.type];
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              inputs: schema.computeInputs?.(node.data.properties) ?? node.data.inputs,
-              outputs: schema.computeOutputs?.(node.data.properties) ?? node.data.outputs
-            }
-          };
-        })
+
+      // Check for dragging
+      const isDragging = changes.some(change =>
+        change.type === 'position' && change.dragging === true
       );
+
+      if (isDragging) {
+        isDraggingRef.current = true;
+        return; // Skip everything during drag for performance
+      }
+
+      const dragEnded = changes.some(change =>
+        change.type === 'position' && change.dragging === false
+      );
+
+      if (dragEnded) {
+        isDraggingRef.current = false;
+        // Don't update model immediately after drag - let position stabilize
+        return;
+      }
+
+      // Only update model for non-position changes
+      const hasNonPositionChanges = changes.some(change =>
+        change.type !== 'position' && change.type !== 'select'
+      );
+
+      if (hasNonPositionChanges) {
+        setTimeout(() => updateFlowModel('nodes changed'), 0);
+      }
     },
-    [onNodesChange, setNodes]
+    [onNodesChange, updateFlowModel]
   );
 
   const handleEdgesChange: OnEdgesChange = useCallback(
     (changes) => {
+      // Apply changes to React Flow immediately
       onEdgesChange(changes);
+
+      // Skip selection changes during dragging
+      if (isDraggingRef.current) {
+        return;
+      }
+
+      // Only update model for structural changes
+      const hasStructuralChanges = changes.some(change =>
+        change.type === 'add' || change.type === 'remove' || change.type === 'reset'
+      );
+
+      if (hasStructuralChanges) {
+        setTimeout(() => updateFlowModel('edges changed'), 0);
+      }
     },
-    [onEdgesChange]
+    [onEdgesChange, updateFlowModel]
   );
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) => addEdge(connection, eds));
+      console.log('Connecting nodes:', connection);
+
+      // Update edges in React Flow
+      setEdges((currentEdges) => {
+        const updatedEdges = addEdge(connection, currentEdges);
+        // Update flow model with fresh edges
+        setTimeout(() => updateFlowModel('edge connected'), 0);
+        return updatedEdges;
+      });
     },
-    [setEdges]
+    [setEdges, updateFlowModel]
   );
 
   const handleAddNode = useCallback((type: NodeType, position?: { x: number; y: number }) => {
+    console.log('handleAddNode called with type:', type, 'position:', position);
+
     const schema = nodeSchemas[type];
-    const id = createUniqueNodeId(type, nodes);
-    const nodePosition = position || { x: 400, y: 100 + nodes.length * 80 };
-    const newNode = flowNodeToReactNode({
-      id,
-      type,
-      position: nodePosition,
-      properties: schema.defaultProperties()
+    if (!schema) {
+      console.error('No schema found for node type:', type);
+      return;
+    }
+
+    // Update nodes in React Flow
+    setNodes((currentNodes) => {
+      const id = createUniqueNodeId(type, currentNodes);
+      const nodePosition = position || { x: 400, y: 100 + currentNodes.length * 80 };
+
+      const newNode = flowNodeToReactNode({
+        id,
+        type,
+        position: nodePosition,
+        properties: schema.defaultProperties()
+      });
+
+      console.log('New node created:', newNode);
+
+      // Update selection and flow model
+      setSelectedNodeId(id);
+      setTimeout(() => updateFlowModel(`added ${type} node`), 0);
+
+      return [...currentNodes, newNode];
     });
-    setNodes((current) => [...current, newNode]);
-    setSelectedNodeId(id);
-  }, [nodes, setNodes, setSelectedNodeId]);
+  }, [setNodes, setSelectedNodeId, updateFlowModel]);
 
   // Drag and drop handlers
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -356,22 +470,45 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
+      console.log('Drop event triggered', event);
+      console.log('DataTransfer types:', event.dataTransfer.types);
 
       const nodeType = event.dataTransfer.getData('application/reactflow') as NodeType;
-      console.log('Drop event triggered, nodeType:', nodeType);
+      console.log('NodeType from dataTransfer:', nodeType);
 
       if (!nodeType) {
         console.log('No nodeType found in drop event');
+        // Try fallback method
+        const textData = event.dataTransfer.getData('text/plain');
+        console.log('Text data fallback:', textData);
+        if (textData && nodeSchemas[textData as NodeType]) {
+          try {
+            const position = reactFlow.screenToFlowPosition({
+              x: event.clientX,
+              y: event.clientY,
+            });
+            console.log('Using fallback, adding node:', textData, 'at position:', position);
+            handleAddNode(textData as NodeType, position);
+          } catch (error) {
+            console.error('Error with reactFlow.screenToFlowPosition:', error);
+          }
+        } else {
+          console.log('Invalid text data or no schema found:', textData);
+        }
         return;
       }
 
-      const position = reactFlow.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
+      try {
+        const position = reactFlow.screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
+        });
 
-      console.log('Drop position:', position);
-      handleAddNode(nodeType, position);
+        console.log('Adding node:', nodeType, 'at position:', position);
+        handleAddNode(nodeType, position);
+      } catch (error) {
+        console.error('Error in onDrop:', error);
+      }
     },
     [reactFlow, handleAddNode]
   );
@@ -399,6 +536,9 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
         };
       })
     );
+
+    // Update flow model when node properties change
+    updateFlowModel(`updated ${nodeId} properties`);
   };
 
   const runAutoLayout = useCallback(async () => {
@@ -412,8 +552,13 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
 
     try {
       const layoutedNodes = await applyAutoLayout(nodes, edges);
+
       setNodes(layoutedNodes);
       setLayoutInitialized(true);
+
+      // Update flow model after layout
+      setTimeout(() => updateFlowModel('auto layout applied'), 0);
+
       requestAnimationFrame(() => {
         try {
           reactFlow.fitView({ padding: 0.2, duration: 400 });
@@ -427,23 +572,40 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
       layoutingRef.current = false;
       setIsLayouting(false);
     }
-  }, [edges, nodes, reactFlow, setNodes]);
+  }, [edges, nodes, reactFlow, updateFlowModel]);
 
   // Ensure auto-layout runs when a new flow without positions is loaded.
   // Use initialNodes/initialEdges from props to avoid race conditions with state updates.
   useEffect(() => {
-    const needsLayout = !isLayoutInitialized(initialNodes) && initialNodes.length > 0;
-    if (!needsLayout || layoutingRef.current) return;
+    console.log('Layout effect triggered');
+    console.log('initialNodes:', initialNodes);
+    console.log('isLayoutInitialized(initialNodes):', isLayoutInitialized(initialNodes));
+    console.log('layoutAttemptedRef.current:', layoutAttemptedRef.current);
 
+    const needsLayout = !isLayoutInitialized(initialNodes) && initialNodes.length > 0;
+    console.log('needsLayout:', needsLayout);
+    console.log('layoutingRef.current:', layoutingRef.current);
+
+    if (!needsLayout || layoutingRef.current || layoutAttemptedRef.current) {
+      console.log('Skipping layout - needsLayout:', needsLayout, 'layoutingRef.current:', layoutingRef.current, 'layoutAttemptedRef.current:', layoutAttemptedRef.current);
+      return;
+    }
+
+    console.log('Starting auto layout');
     layoutingRef.current = true;
+    layoutAttemptedRef.current = true;
     setIsLayouting(true);
     setContextMenu(null);
 
     (async () => {
       try {
+        console.log('Applying auto layout to:', initialNodes.length, 'nodes');
         const layoutedNodes = await applyAutoLayout(initialNodes, initialEdges);
+        console.log('Layout result:', layoutedNodes);
+
         setNodes(layoutedNodes);
         setLayoutInitialized(true);
+        console.log('Layout applied successfully');
         requestAnimationFrame(() => {
           try {
             reactFlow.fitView({ padding: 0.2, duration: 400 });
@@ -458,7 +620,7 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
         setIsLayouting(false);
       }
     })();
-  }, [initialNodes, initialEdges, reactFlow, setNodes]);
+  }, [initialNodes, initialEdges, reactFlow]);
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -476,22 +638,30 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
   }, [contextMenu]);
 
   return (
-    <div className="flow-editor-shell">
+    <div className={showMetadata ? "grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0" : "h-full min-h-0"}>
       {showMetadata && (
-        <div className="space-y-3 overflow-y-auto pr-2">
-          <FlowMetadataForm meta={meta} onMetaChange={(updater) => setMeta((prev) => updater(prev))} />
+        <div className="space-y-4 overflow-y-auto">
+          <FlowMetadataForm meta={meta} onMetaChange={(updater) => {
+            setMeta((prev) => {
+              const newMeta = updater(prev);
+              updateFlowModel('metadata updated');
+              return newMeta;
+            });
+          }} />
         </div>
       )}
-      <div className="shad-card overflow-hidden">
-        <Tabs defaultValue="design">
-          <TabsList>
+      <Card className={showMetadata ? "lg:col-span-2 overflow-hidden flex flex-col h-full" : "h-full overflow-hidden flex flex-col"}>
+        <Tabs defaultValue="design" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="flex-shrink-0">
             <TabsTrigger value="design">Tasarım</TabsTrigger>
             <TabsTrigger value="json">Flow JSON</TabsTrigger>
           </TabsList>
-          <TabsContent value="design">
+          <TabsContent value="design" className="flex-1 overflow-hidden min-h-0 p-0">
             <div
               ref={flowWrapperRef}
-              style={{ height: '70vh', position: 'relative' }}
+              className="h-full w-full relative"
+              onDrop={onDrop}
+              onDragOver={onDragOver}
             >
               <ReactFlow
                 nodes={nodes}
@@ -501,6 +671,9 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
                 onEdgesChange={handleEdgesChange}
                 onConnect={onConnect}
                 onSelectionChange={(params) => {
+                  // Skip selection during dragging for better performance
+                  if (isDraggingRef.current) return;
+
                   if (!params) return;
                   const nodeId = params.nodes?.[0]?.id;
                   setSelectedNodeId(nodeId ?? null);
@@ -515,9 +688,15 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
                   });
                 }}
                 onPaneClick={() => setContextMenu(null)}
-                onDrop={onDrop}
-                onDragOver={onDragOver}
                 fitView
+                defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+                minZoom={0.1}
+                maxZoom={2}
+                elevateNodesOnSelect={false}
+                selectNodesOnDrag={false}
+                connectionRadius={20}
+                snapToGrid={false}
+                nodeDragThreshold={1}
               >
                 <MiniMap />
                 <Controls />
@@ -525,28 +704,31 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
                 <FloatingNodeToolbar onAddNode={handleAddNode} />
               </ReactFlow>
               {contextMenu && (
-                <div className="flow-context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}>
-                  <button type="button" onClick={() => void runAutoLayout()} disabled={isLayouting}>
+                <div className="absolute bg-background border border-border rounded-md shadow-md p-2 z-50" style={{ top: contextMenu.y, left: contextMenu.x }}>
+                  <Button variant="ghost" size="sm" onClick={() => void runAutoLayout()} disabled={isLayouting}>
                     {isLayouting ? 'Yerleşim uygulanıyor…' : 'Otomatik Yerleşim'}
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
           </TabsContent>
-          <TabsContent value="json">
-            <pre>{JSON.stringify(createFlowDefinition(meta, nodes, edges), null, 2)}</pre>
+          <TabsContent value="json" className="flex-1 overflow-hidden min-h-0 p-4">
+            <pre className="text-xs bg-muted p-4 rounded-md border h-full overflow-auto">{JSON.stringify(createFlowDefinition(meta, nodes, edges), null, 2)}</pre>
           </TabsContent>
         </Tabs>
-      </div>
-      <div className="space-y-3 overflow-y-auto pl-2">
-        <NodeInspector
-          node={selectedNode}
-          onChange={(properties) => {
-            if (!selectedNode) return;
-            updateNodeProperties(selectedNode.id, properties);
-          }}
-        />
-      </div>
+      </Card>
+      {showMetadata && (
+        <div className="space-y-4 overflow-y-auto">
+          <NodeInspector
+            node={selectedNode}
+            onChange={(properties) => {
+              if (!selectedNode) return;
+              updateNodeProperties(selectedNode.id, properties);
+            }}
+            variables={meta.variables}
+          />
+        </div>
+      )}
     </div>
   );
 };

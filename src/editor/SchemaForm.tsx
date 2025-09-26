@@ -6,7 +6,13 @@ import { Label } from '../components/ui/label';
 import { Switch } from '../components/ui/switch';
 import { Select } from '../components/ui/select';
 import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Separator } from '../components/ui/separator';
 import { DecisionTreeForm } from '../components/DecisionTreeForm';
+import { JsonEditor } from '../components/JsonEditor';
+import { VariableInput } from '../components/VariableInput';
+import { FlowVariable } from '../model/flow';
 import { cn } from '../utils/cn';
 
 type PropertyValue = Record<string, any>;
@@ -15,6 +21,7 @@ export interface SchemaFormProps {
   schema: NodeSchema<any>;
   value: PropertyValue;
   onChange: (value: PropertyValue) => void;
+  variables?: Record<string, FlowVariable>;
 }
 
 const getValueAtPath = (obj: PropertyValue, path: string[]): any => {
@@ -35,16 +42,26 @@ const removeIndex = (arr: any[], index: number) => arr.filter((_, idx) => idx !=
 const renderPrimitiveField = (
   field: NodeSchemaField,
   value: any,
-  onValueChange: (value: any) => void
+  onValueChange: (value: any) => void,
+  variables?: Record<string, FlowVariable>
 ) => {
   switch (field.type) {
     case 'text':
-      return <Input value={value ?? ''} onChange={(event) => onValueChange(event.target.value)} />;
+      return (
+        <VariableInput
+          value={value ?? ''}
+          onChange={onValueChange}
+          variables={variables}
+          multiline={false}
+        />
+      );
     case 'textarea':
       return (
-        <Textarea
+        <VariableInput
           value={value ?? ''}
-          onChange={(event) => onValueChange(event.target.value)}
+          onChange={onValueChange}
+          variables={variables}
+          multiline={true}
         />
       );
     case 'number':
@@ -84,16 +101,11 @@ const renderPrimitiveField = (
       );
     case 'json':
       return (
-        <Textarea
-          value={value ? JSON.stringify(value, null, 2) : ''}
-          onChange={(event) => {
-            try {
-              const parsed = event.target.value ? JSON.parse(event.target.value) : undefined;
-              onValueChange(parsed);
-            } catch (error) {
-              onValueChange(event.target.value);
-            }
-          }}
+        <JsonEditor
+          value={value}
+          onChange={onValueChange}
+          minHeight="150px"
+          variables={variables}
         />
       );
     default:
@@ -106,24 +118,28 @@ const SchemaFieldRenderer: React.FC<{
   path: string[];
   value: PropertyValue;
   onChange: (value: PropertyValue) => void;
-}> = ({ field, path, value, onChange }) => {
+  variables?: Record<string, FlowVariable>;
+}> = ({ field, path, value, onChange, variables }) => {
   const fieldValue = getValueAtPath(value, path);
 
   if (field.type === 'object') {
     return (
       <div className="space-y-3">
         <Label>{field.label}</Label>
-        <div className="space-y-4">
-          {field.fields.map((child) => (
-            <SchemaFieldRenderer
-              key={child.name}
-              field={child}
-              path={[...path, child.name]}
-              value={value}
-              onChange={onChange}
-            />
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-3 space-y-3">
+            {field.fields.map((child) => (
+              <SchemaFieldRenderer
+                key={child.name}
+                field={child}
+                path={[...path, child.name]}
+                value={value}
+                onChange={onChange}
+                variables={variables}
+              />
+            ))}
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -148,20 +164,23 @@ const SchemaFieldRenderer: React.FC<{
         </div>
         <div className="space-y-3">
           {items.map((item, index) => (
-            <div key={index} className="rounded-md border border-slate-200 p-3 space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>{field.itemLabel ?? 'Öğe'} #{index + 1}</span>
-                <button
-                  type="button"
-                  className="text-red-500"
-                  onClick={() =>
-                    onChange(setValueAtPath(value, path, removeIndex(items, index)))
-                  }
-                >
-                  Kaldır
-                </button>
-              </div>
-              <div className="space-y-2">
+            <Card key={index}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline">{field.itemLabel ?? 'Öğe'} #{index + 1}</Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-1 text-destructive hover:text-destructive"
+                    onClick={() =>
+                      onChange(setValueAtPath(value, path, removeIndex(items, index)))
+                    }
+                  >
+                    Kaldır
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {field.fields.map((child) => (
                   <SchemaFieldRenderer
                     key={child.name}
@@ -169,10 +188,11 @@ const SchemaFieldRenderer: React.FC<{
                     path={[...path, index.toString(), child.name]}
                     value={value}
                     onChange={onChange}
+                    variables={variables}
                   />
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -199,39 +219,44 @@ const SchemaFieldRenderer: React.FC<{
         </div>
         <div className="space-y-2">
           {entries.map(([key, val]) => (
-            <div key={key} className="grid grid-cols-2 gap-2 items-center">
-              <Input
-                value={key}
-                onChange={(event) => {
-                  const newEntries = Object.fromEntries(
-                    entries.map(([entryKey, entryValue]) =>
-                      entryKey === key ? [event.target.value, entryValue] : [entryKey, entryValue]
-                    )
-                  );
-                  onChange(setValueAtPath(value, path, newEntries));
-                }}
-              />
-              <div className="flex gap-2">
-                <Input
-                  value={val as string}
-                  onChange={(event) => {
-                    onChange(
-                      setValueAtPath(value, path, { ...fieldValue, [key]: event.target.value })
-                    );
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    const newEntries = Object.fromEntries(entries.filter(([entryKey]) => entryKey !== key));
-                    onChange(setValueAtPath(value, path, newEntries));
-                  }}
-                >
-                  Sil
-                </Button>
-              </div>
-            </div>
+            <Card key={key}>
+              <CardContent className="p-3">
+                <div className="grid grid-cols-2 gap-2 items-center">
+                  <Input
+                    value={key}
+                    onChange={(event) => {
+                      const newEntries = Object.fromEntries(
+                        entries.map(([entryKey, entryValue]) =>
+                          entryKey === key ? [event.target.value, entryValue] : [entryKey, entryValue]
+                        )
+                      );
+                      onChange(setValueAtPath(value, path, newEntries));
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={val as string}
+                      onChange={(event) => {
+                        onChange(
+                          setValueAtPath(value, path, { ...fieldValue, [key]: event.target.value })
+                        );
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        const newEntries = Object.fromEntries(entries.filter(([entryKey]) => entryKey !== key));
+                        onChange(setValueAtPath(value, path, newEntries));
+                      }}
+                    >
+                      Sil
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -246,15 +271,15 @@ const SchemaFieldRenderer: React.FC<{
       </Label>
       {renderPrimitiveField(field, fieldValue, (updated) => {
         onChange(setValueAtPath(value, path, updated));
-      })}
+      }, variables)}
       {field.description && (
-        <p className={cn('text-xs text-slate-500 m-0')}>{field.description}</p>
+        <p className={cn('text-xs text-muted-foreground')}>{field.description}</p>
       )}
     </div>
   );
 };
 
-export const SchemaForm: React.FC<SchemaFormProps> = ({ schema, value, onChange }) => {
+export const SchemaForm: React.FC<SchemaFormProps> = ({ schema, value, onChange, variables }) => {
   return (
     <div className="space-y-4">
       {schema.fields.map((field) => (
@@ -264,6 +289,7 @@ export const SchemaForm: React.FC<SchemaFormProps> = ({ schema, value, onChange 
           path={[field.name]}
           value={value}
           onChange={onChange}
+          variables={variables}
         />
       ))}
     </div>

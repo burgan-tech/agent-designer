@@ -18,32 +18,26 @@ const formatSummaryValue = (value: string) => {
   return value;
 };
 
-const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = ({ data }) => {
-  const summary = useMemo(() => data.schema.summary?.(data.properties) ?? [], [data]);
+const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = React.memo(({ data }) => {
+  const summary = useMemo(() => data.schema.summary?.(data.properties) ?? [], [data.schema, data.properties]);
+
+  // Calculate minimum height based on number of handles
+  const maxHandles = Math.max(data.inputs.length, data.outputs.length);
+  const minHeight = Math.max(60, maxHandles * 30); // 30px per handle minimum
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <Badge>{data.type}</Badge>
-        <span className="text-xs text-slate-400">{data.id}</span>
-      </div>
+    <div className="space-y-2" data-node-type={data.type} style={{ minHeight: `${minHeight}px` }}>
       <div>
-        <h4 className="m-0 text-base font-semibold flex items-center gap-2">
-          <span className="text-lg">{nodeIcons[data.type]}</span>
+        <h4 className="m-0 text-sm font-semibold flex items-center gap-2">
+          <i className={`ph ${nodeIcons[data.type]} text-lg text-primary`}></i>
           {data.properties?.title ?? data.schema.title}
         </h4>
-        <p className="m-0 text-xs text-slate-500 leading-relaxed">
-          {data.schema.description}
-        </p>
       </div>
-      <div className="space-y-1">
-        {summary.map((item) => (
-          <div key={item.label} className="text-xs">
-            <span className="font-semibold text-slate-500 mr-1">{item.label}:</span>
-            <span className="text-slate-700">{formatSummaryValue(item.value)}</span>
-          </div>
-        ))}
-      </div>
+      {summary.length > 0 && summary[0] && (
+        <div className="text-xs text-slate-600">
+          {formatSummaryValue(summary[0].value)}
+        </div>
+      )}
       {data.inputs.map((input, index) => (
         <Handle
           key={`input-${input}`}
@@ -72,7 +66,7 @@ const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = ({ data }) => {
       {data.inputs.map((input, index) => (
         <div
           key={`input-label-${input}`}
-          className="handle-label input-label"
+          className="handle-label input-label opacity-75 hover:opacity-100 transition-opacity"
           style={{
             top: calculateHandlePosition(index, data.inputs.length),
             transform: 'translateX(-100%) translateY(-50%)'
@@ -85,7 +79,7 @@ const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = ({ data }) => {
       {data.outputs.map((output, index) => (
         <div
           key={`output-label-${output}`}
-          className="handle-label output-label"
+          className="handle-label output-label opacity-75 hover:opacity-100 transition-opacity"
           style={{
             top: calculateHandlePosition(index, data.outputs.length),
             transform: 'translateX(100%) translateY(-50%)'
@@ -96,6 +90,8 @@ const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = ({ data }) => {
       ))}
     </div>
   );
-};
+});
+
+FlowNodeComponent.displayName = 'FlowNodeComponent';
 
 export default FlowNodeComponent;

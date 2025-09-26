@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { ChevronRight, ChevronDown, Plus, X } from 'lucide-react';
+import { cn } from '../utils/cn';
 
 interface DecisionOption {
   text: string;
@@ -29,6 +30,10 @@ const InlineInput: React.FC<{
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
 
+  React.useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
   const handleSave = () => {
     onChange(editValue);
     setEditing(false);
@@ -55,7 +60,7 @@ const InlineInput: React.FC<{
         onBlur={handleSave}
         onKeyDown={handleKeyPress}
         placeholder={placeholder}
-        className={`inline-edit-input ${className || ''}`}
+        className={cn("min-w-0 h-6 text-xs border-dashed", className)}
         autoFocus
       />
     );
@@ -63,11 +68,14 @@ const InlineInput: React.FC<{
 
   return (
     <div
-      className={`inline-edit-text ${className || ''}`}
+      className={cn(
+        "cursor-pointer hover:bg-muted/20 px-1 py-0.5 rounded transition-colors min-w-0",
+        className
+      )}
       onClick={() => setEditing(true)}
       title="Düzenlemek için tıklayın"
     >
-      {value || placeholder}
+      {value || <span className="text-muted-foreground">{placeholder}</span>}
     </div>
   );
 };
@@ -79,6 +87,7 @@ const DecisionTreeNode: React.FC<{
   onDelete?: () => void;
   editable?: boolean;
 }> = ({ node, level, onChange, onDelete, editable = false }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
   const updateQuestion = (question: string) => {
     onChange?.({ ...node, question });
   };
@@ -137,105 +146,142 @@ const DecisionTreeNode: React.FC<{
   };
 
   return (
-    <div className="tree-node" style={{ marginLeft: `${level * 20}px` }}>
-      <div className="question-node">
-        {editable ? (
-          <InlineInput
-            value={node.question}
-            onChange={updateQuestion}
-            placeholder="Soru"
-            className="question-text"
-          />
-        ) : (
-          <div className="question-text">
-            {node.question}
-          </div>
-        )}
+    <div className="space-y-1" style={{ marginLeft: `${level * 12}px` }}>
+      <div className="flex items-center gap-1 group py-1">
+        {/* Expand/Collapse Chevron */}
+        <button
+          className="flex items-center justify-center w-4 h-4 hover:bg-muted/50 rounded transition-colors"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? (
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3 w-3 text-muted-foreground" />
+          )}
+        </button>
 
+        {/* Question */}
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          {editable ? (
+            <InlineInput
+              value={node.question}
+              onChange={updateQuestion}
+              placeholder="Soru"
+              className="font-medium text-foreground flex-1 text-sm"
+            />
+          ) : (
+            <span className="font-medium text-foreground text-sm truncate">
+              {node.question}
+            </span>
+          )}
+        </div>
+
+        {/* Delete Button */}
         {editable && level > 0 && (
           <button
-            type="button"
-            className="delete-node-btn"
+            className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex items-center justify-center"
             onClick={onDelete}
             title="Sil"
           >
-            ×
+            <X className="h-3 w-3" />
           </button>
         )}
       </div>
 
-      <div className="options-container">
-        {node.options.map((option, index) => (
-          <div key={index} className="option-branch">
-            <div className="option-node">
-              {editable ? (
-                <div className="option-edit">
-                  <InlineInput
-                    value={option.text}
-                    onChange={(text) => updateOption(index, { ...option, text })}
-                    placeholder="Seçenek"
-                    className="option-text-input"
-                  />
-                  {!option.children && (
-                    <InlineInput
-                      value={option.output || option.value}
-                      onChange={(output) => updateOption(index, { ...option, output })}
-                      placeholder="→"
-                      className="option-output-input"
-                    />
+      {/* Options - Only show when expanded */}
+      {isExpanded && (
+        <div className="ml-4 space-y-0.5">
+          {node.options.map((option, index) => (
+            <div key={index} className="space-y-0.5">
+              <div className="flex items-center gap-1 py-0.5 px-1 rounded hover:bg-muted/30 group text-sm">
+                {/* Option Text */}
+                <div className="flex items-center gap-1 flex-1 min-w-0">
+                  {editable ? (
+                    <>
+                      <InlineInput
+                        value={option.text}
+                        onChange={(text) => updateOption(index, { ...option, text })}
+                        placeholder="Seçenek"
+                        className="flex-1 min-w-0 text-xs"
+                      />
+                      {!option.children && (
+                        <>
+                          <span className="text-muted-foreground text-xs">→</span>
+                          <InlineInput
+                            value={option.output || option.value}
+                            onChange={(output) => updateOption(index, { ...option, output })}
+                            placeholder="Sonuç"
+                            className="flex-1 min-w-0 text-xs text-green-600"
+                          />
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xs truncate">{option.text}</span>
+                      {option.output && (
+                        <>
+                          <span className="text-muted-foreground text-xs">→</span>
+                          <span className="text-xs text-green-600 bg-green-50 px-1 py-0.5 rounded truncate">
+                            {option.output}
+                          </span>
+                        </>
+                      )}
+                    </>
                   )}
-                  <div className="option-buttons">
+                </div>
+
+                {/* Action Buttons */}
+                {editable && (
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      type="button"
                       onClick={() => option.children ? removeChildNode(index) : addChildNode(index)}
                       title={option.children ? "Alt soruyu kaldır" : "Alt soru ekle"}
-                      className="compact-btn"
+                      className="w-4 h-4 text-muted-foreground hover:text-foreground flex items-center justify-center"
                     >
-                      {option.children ? '−' : '+'}
+                      <Plus className="h-2.5 w-2.5" />
                     </button>
                     <button
-                      type="button"
                       onClick={() => deleteOption(index)}
                       title="Sil"
-                      className="compact-btn delete"
+                      className="w-4 h-4 text-muted-foreground hover:text-destructive flex items-center justify-center"
                     >
-                      ×
+                      <X className="h-2.5 w-2.5" />
                     </button>
                   </div>
-                </div>
-              ) : (
-                <div className="option-view">
-                  <span className="option-text">{option.text}</span>
-                  {option.output && <span className="output-badge">→{option.output}</span>}
+                )}
+              </div>
+
+              {/* Child Nodes */}
+              {option.children && (
+                <div className="ml-3 border-l border-muted-foreground/20 pl-1">
+                  <DecisionTreeNode
+                    node={option.children}
+                    level={level + 1}
+                    onChange={(childNode) => updateChildNode(index, childNode)}
+                    onDelete={() => removeChildNode(index)}
+                    editable={editable}
+                  />
                 </div>
               )}
             </div>
+          ))}
 
-            {option.children && (
-              <div className="child-tree">
-                <DecisionTreeNode
-                  node={option.children}
-                  level={level + 1}
-                  onChange={(childNode) => updateChildNode(index, childNode)}
-                  onDelete={() => removeChildNode(index)}
-                  editable={editable}
-                />
-              </div>
-            )}
-          </div>
-        ))}
-
-        {editable && (
-          <button
-            type="button"
-            onClick={addOption}
-            className="add-option-btn"
-            title="Seçenek ekle"
-          >
-            + Seçenek
-          </button>
-        )}
-      </div>
+          {/* Add Option Button */}
+          {editable && (
+            <div className="flex items-center gap-1 py-0.5 px-1">
+              <button
+                onClick={addOption}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                title="Seçenek ekle"
+              >
+                <Plus className="h-3 w-3" />
+                Seçenek ekle
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -247,21 +293,20 @@ export const DecisionTreeViewer: React.FC<DecisionTreeViewerProps> = ({
 }) => {
   if (!tree || !tree.question) {
     return (
-      <div className="empty-tree">
-        <p>Karar ağacı bulunamadı</p>
+      <div className="text-center py-8">
+        <p className="text-muted-foreground text-sm">Karar ağacı bulunamadı</p>
       </div>
     );
   }
 
   return (
-    <div className="decision-tree-viewer">
-      <div className="tree-header">
-        <h4>{editable ? 'Karar Ağacı Düzenleyici' : 'Karar Ağacı Görünümü'}</h4>
-        {editable && (
-          <p className="edit-hint">Düzenlemek için metinlere tıklayın</p>
-        )}
-      </div>
-      <div className="tree-container">
+    <div className="space-y-1">
+      {editable && (
+        <div className="text-xs text-muted-foreground px-1">
+          Düzenlemek için metinlere tıklayın
+        </div>
+      )}
+      <div className="bg-muted/10 rounded-md p-1.5 max-h-[300px] overflow-y-auto">
         <DecisionTreeNode
           node={tree}
           level={0}

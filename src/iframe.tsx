@@ -25,14 +25,14 @@ const IframeApp: React.FC = () => {
   const initialFlow = useMemo(() => flow ?? sampleFlow, [flow]);
 
   return (
-    <div className="flow-editor-container">
+    <div className="h-full w-full">
       <FlowEditor
         initialFlow={initialFlow}
         onFlowChange={(updated) => {
           window.parent.postMessage({ type: 'iframe-flow-change', payload: updated }, '*');
           setFlow(updated);
         }}
-        showMetadata={false}
+        showMetadata={true}
       />
     </div>
   );

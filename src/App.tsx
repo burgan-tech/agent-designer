@@ -7,17 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Button } from './components/ui/button';
 
-const FlowIntegrationDemo: React.FC = () => {
+interface FlowIntegrationDemoProps {
+  currentFlow: FlowDefinition;
+  onFlowChange: (definition: FlowDefinition) => void;
+}
+
+const FlowIntegrationDemo: React.FC<FlowIntegrationDemoProps> = ({ currentFlow, onFlowChange }) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const [flow, setFlow] = useState<FlowDefinition>(sampleFlow);
   const [iframeReady, setIframeReady] = useState(false);
-  const [hostName, setHostName] = useState(flow.name);
-  const flowRef = useRef(flow);
+  const [hostName, setHostName] = useState(currentFlow.name);
+  const flowRef = useRef(currentFlow);
 
   useEffect(() => {
-    flowRef.current = flow;
-    setHostName(flow.name);
-  }, [flow]);
+    flowRef.current = currentFlow;
+    setHostName(currentFlow.name);
+  }, [currentFlow]);
 
   const postFlowToIframe = useCallback((definition: FlowDefinition) => {
     if (iframeRef.current?.contentWindow) {
@@ -35,7 +39,7 @@ const FlowIntegrationDemo: React.FC = () => {
         postFlowToIframe(flowRef.current);
       }
       if (event.data?.type === 'iframe-flow-change') {
-        setFlow(event.data.payload as FlowDefinition);
+        onFlowChange(event.data.payload as FlowDefinition);
       }
     };
 
@@ -48,55 +52,49 @@ const FlowIntegrationDemo: React.FC = () => {
       ...flowRef.current,
       name: hostName
     };
-    setFlow(updated);
+    onFlowChange(updated);
     postFlowToIframe(updated);
   };
 
   const connectionStatus = useMemo(() => (iframeReady ? 'Editor hazır' : 'Editor yükleniyor...'), [iframeReady]);
 
   return (
-    <div className="grid gap-4" style={{ gridTemplateColumns: '1.2fr 1fr' }}>
-      <Card>
+    <div className="h-full flex gap-4">
+      <Card className="h-full flex flex-col overflow-hidden w-1/4 min-w-[300px]">
         <CardHeader>
           <CardTitle>Sunucu Uygulaması</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-slate-600">
-            Bu kart, flow editörünü iframe olarak barındıran ana uygulamanın nasıl iletişim kuracağını
-            gösterir. Flow adı gibi verileri güncelleyin ve iframe içinde gerçek zamanlı olarak nasıl
-            senkronize olduğunu görün.
+        <CardContent className="flex-1 flex flex-col space-y-3 overflow-hidden">
+          <p className="text-xs text-slate-600">
+            Bu kart, flow editörünü iframe olarak barındıran ana uygulamanın nasıl iletişim kuracağını gösterir.
           </p>
-          <div className="space-y-1">
-            <label className="label">Flow Adı</label>
-            <Input value={hostName} onChange={(event) => setHostName(event.target.value)} />
+          <div className="space-y-2">
+            <label className="text-xs font-medium leading-none">Flow Adı</label>
+            <Input value={hostName} onChange={(event) => setHostName(event.target.value)} className="h-8 text-sm" />
           </div>
           <div className="flex items-center gap-2">
-            <Button type="button" onClick={hostUpdate}>
+            <Button type="button" onClick={hostUpdate} size="sm">
               Iframe'e Gönder
             </Button>
-            <span className="text-xs text-slate-500">Durum: {connectionStatus}</span>
+            <span className="text-xs text-slate-500">{connectionStatus}</span>
           </div>
-          <div>
-            <label className="label">Güncel Flow JSON</label>
-            <pre style={{ maxHeight: 280, overflow: 'auto' }}>{JSON.stringify(flow, null, 2)}</pre>
+          <div className="flex-1 flex flex-col space-y-2 min-h-0">
+            <label className="text-xs font-medium leading-none">Güncel Flow JSON</label>
+            <pre className="text-xs bg-muted p-2 rounded-md border flex-1 overflow-auto">{JSON.stringify(currentFlow, null, 2)}</pre>
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="flex-1 h-full flex flex-col overflow-hidden">
         <CardHeader>
           <CardTitle>Embedded Flow Editor (Iframe)</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="flex-1 p-3 min-h-0 flex flex-col">
           <iframe
             ref={iframeRef}
             title="Flow Editor"
             src="/iframe.html"
-            style={{ width: '100%', height: 420, border: '1px solid rgba(148, 163, 184, 0.5)', borderRadius: 12 }}
+            className="w-full flex-1 border-0 rounded-lg"
           />
-          <p className="text-xs text-slate-500">
-            İframe içerisindeki editör, host uygulamasından gelen mesajları dinler ve her değişiklikte
-            güncel flow'u host uygulamasına geri gönderir.
-          </p>
         </CardContent>
       </Card>
     </div>
@@ -104,28 +102,39 @@ const FlowIntegrationDemo: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const [currentFlow, setCurrentFlow] = useState<FlowDefinition>(sampleFlow);
+
+  const handleFlowChange = useCallback((definition: FlowDefinition) => {
+    console.log('App received flow change:', definition);
+    setCurrentFlow(definition);
+  }, []);
+
   return (
-    <div className="flow-editor-container">
-      <header className="shad-card" style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 className="m-0 text-2xl font-bold">Yeni Flow Designer</h1>
-          <p className="m-0 text-sm text-slate-500">
-            Görsel akış tasarım editörü ve iframe entegrasyon demosu
-          </p>
+    <div className="h-screen w-full bg-background flex flex-col overflow-hidden">
+      <header className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground mb-1">Yeni Flow Designer</h1>
+            <p className="text-sm text-muted-foreground">
+              Görsel akış tasarım editörü ve iframe entegrasyon demosu
+            </p>
+          </div>
+          <Button variant="outline" asChild>
+            <a href="#integration">Iframe Demo</a>
+          </Button>
         </div>
-        <a className="shad-button" href="#integration">Iframe Demo</a>
       </header>
-      <main className="p-4 space-y-4" id="integration">
-        <Tabs defaultValue="designer">
-          <TabsList>
+      <main className="flex-1 flex flex-col overflow-hidden min-h-0 p-6" id="integration">
+        <Tabs defaultValue="designer" className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="designer">Flow Editörü</TabsTrigger>
             <TabsTrigger value="integration">Iframe Entegrasyonu</TabsTrigger>
           </TabsList>
-          <TabsContent value="designer">
-            <FlowEditor initialFlow={sampleFlow} />
+          <TabsContent value="designer" className="flex-1 mt-4 overflow-hidden min-h-0">
+            <FlowEditor initialFlow={currentFlow} onFlowChange={handleFlowChange} />
           </TabsContent>
-          <TabsContent value="integration">
-            <FlowIntegrationDemo />
+          <TabsContent value="integration" className="flex-1 mt-4 w-full overflow-hidden min-h-0 flex flex-col">
+            <FlowIntegrationDemo currentFlow={currentFlow} onFlowChange={handleFlowChange} />
           </TabsContent>
         </Tabs>
       </main>

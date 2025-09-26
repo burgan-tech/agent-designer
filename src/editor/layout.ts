@@ -10,7 +10,7 @@ const DEFAULT_NODE_HEIGHT = 160;
 const LAYOUT_OPTIONS = {
   'elk.algorithm': 'layered',
   'elk.direction': 'RIGHT',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '140',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '120',
   'elk.layered.spacing.edgeNodeBetweenLayers': '60',
   'elk.spacing.nodeNode': '80',
   'elk.spacing.componentComponent': '120'

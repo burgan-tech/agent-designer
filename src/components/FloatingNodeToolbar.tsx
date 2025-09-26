@@ -8,12 +8,17 @@ interface FloatingNodeToolbarProps {
   onAddNode: (type: NodeType, position: { x: number; y: number }) => void;
 }
 
-export const FloatingNodeToolbar: React.FC<FloatingNodeToolbarProps> = ({ onAddNode }) => {
+export const FloatingNodeToolbar: React.FC<FloatingNodeToolbarProps> = React.memo(({ onAddNode }) => {
   const handleDragStart = (event: React.DragEvent, nodeType: NodeType) => {
     console.log('Drag start:', nodeType);
-    event.dataTransfer.setData('application/reactflow', nodeType);
-    event.dataTransfer.setData('text/plain', nodeType);
-    event.dataTransfer.effectAllowed = 'move';
+    try {
+      event.dataTransfer.setData('application/reactflow', nodeType);
+      event.dataTransfer.setData('text/plain', nodeType);
+      event.dataTransfer.effectAllowed = 'move';
+      console.log('Data transfer set successfully');
+    } catch (error) {
+      console.error('Error setting drag data:', error);
+    }
   };
 
   return (
@@ -27,13 +32,19 @@ export const FloatingNodeToolbar: React.FC<FloatingNodeToolbarProps> = ({ onAddN
               className="toolbar-node-item"
               draggable
               onDragStart={(event) => handleDragStart(event, type as NodeType)}
+              onClick={() => {
+                console.log('Toolbar item clicked:', type);
+                onAddNode(type as NodeType, { x: 100, y: 100 });
+              }}
               title={schema.title}
             >
-              <div className="node-icon">{nodeIcons[type as NodeType]}</div>
+              <i className={`ph ${nodeIcons[type as NodeType]} node-icon`}></i>
             </div>
           ))}
         </div>
       </div>
     </Panel>
   );
-};
+});
+
+FloatingNodeToolbar.displayName = 'FloatingNodeToolbar';

@@ -15,7 +15,7 @@ export const nodeSchemas: NodeSchemaMap = {
       { name: 'description', label: 'Description', type: 'textarea' }
     ],
     defaultProperties: defaultString('Akış Başlangıcı'),
-    summary: (props) => [{ label: 'Title', value: props.title ?? 'Start' }],
+    summary: (props) => [],
     computeOutputs: () => ['next']
   },
   end: {
@@ -33,7 +33,6 @@ export const nodeSchemas: NodeSchemaMap = {
       returnToMain: true
     }),
     summary: (props) => [
-      { label: 'Title', value: props.title ?? 'End' },
       { label: 'Message', value: props.message ?? '' }
     ],
     computeInputs: () => ['previous']
@@ -66,7 +65,6 @@ export const nodeSchemas: NodeSchemaMap = {
       typing: true
     }),
     summary: (props) => [
-      { label: 'Title', value: props.title ?? 'Message' },
       { label: 'Preview', value: props.message ?? '' }
     ],
     computeInputs: () => ['previous'],
@@ -111,7 +109,6 @@ export const nodeSchemas: NodeSchemaMap = {
       timeout: 300
     }),
     summary: (props) => [
-      { label: 'Title', value: props.title ?? 'Button' },
       { label: 'Options', value: `${props.buttons?.length ?? 0} seçenek` }
     ],
     computeInputs: () => ['previous'],
@@ -179,7 +176,6 @@ export const nodeSchemas: NodeSchemaMap = {
       }
     }),
     summary: (props) => [
-      { label: 'Title', value: props.title ?? 'Input' },
       { label: 'Type', value: props.inputType ?? 'text' }
     ],
     computeInputs: () => ['previous'],
@@ -244,7 +240,6 @@ export const nodeSchemas: NodeSchemaMap = {
     summary: (props) => {
       const total = props.conditions?.length ?? 0;
       return [
-        { label: 'Title', value: props.title ?? 'Condition' },
         { label: 'Rules', value: `${total} koşul` }
       ];
     },
@@ -323,7 +318,6 @@ export const nodeSchemas: NodeSchemaMap = {
       }
     }),
     summary: (props) => [
-      { label: 'Title', value: props.title ?? 'Function' },
       { label: 'Function', value: props.function?.name ?? 'Unnamed' }
     ],
     computeInputs: () => ['previous'],
@@ -643,9 +637,7 @@ export const nodeSchemas: NodeSchemaMap = {
         ]
       }
     }),
-    summary: (props) => [
-      { label: 'Title', value: props.title ?? 'Decision Tree' }
-    ],
+    summary: (props) => [],
     computeInputs: () => ['previous'],
     computeOutputs: (props) => {
       const extractOutputs = (node: any): string[] => {
