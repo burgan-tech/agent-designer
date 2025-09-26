@@ -420,11 +420,36 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
     }
   }, [edges, nodes, reactFlow, setNodes]);
 
+  // Ensure auto-layout runs when a new flow without positions is loaded.
+  // Use initialNodes/initialEdges from props to avoid race conditions with state updates.
   useEffect(() => {
-    if (!layoutInitialized && nodes.length) {
-      void runAutoLayout();
-    }
-  }, [layoutInitialized, nodes.length, runAutoLayout]);
+    const needsLayout = !isLayoutInitialized(initialNodes) && initialNodes.length > 0;
+    if (!needsLayout || layoutingRef.current) return;
+
+    layoutingRef.current = true;
+    setIsLayouting(true);
+    setContextMenu(null);
+
+    (async () => {
+      try {
+        const layoutedNodes = await applyAutoLayout(initialNodes, initialEdges);
+        setNodes(layoutedNodes);
+        setLayoutInitialized(true);
+        requestAnimationFrame(() => {
+          try {
+            reactFlow.fitView({ padding: 0.2, duration: 400 });
+          } catch (error) {
+            console.warn('fitView failed', error);
+          }
+        });
+      } catch (error) {
+        console.error('Failed to apply auto layout on load', error);
+      } finally {
+        layoutingRef.current = false;
+        setIsLayouting(false);
+      }
+    })();
+  }, [initialNodes, initialEdges, reactFlow, setNodes]);
 
   useEffect(() => {
     if (!contextMenu) return;

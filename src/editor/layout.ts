@@ -37,12 +37,16 @@ type ElkLayoutGraph = {
   edges?: ElkLayoutEdge[];
 };
 
-export const isLayoutInitialized = (nodes: Node<DesignerNodeData>[]): boolean =>
-  nodes.some((node) => {
+// Consider layout initialized only when all nodes have non-zero positions.
+// This avoids falsely treating partially positioned graphs as initialized.
+export const isLayoutInitialized = (nodes: Node<DesignerNodeData>[]): boolean => {
+  if (!nodes.length) return false;
+  return nodes.every((node) => {
     const x = node.position?.x ?? 0;
     const y = node.position?.y ?? 0;
     return x !== 0 || y !== 0;
   });
+};
 
 export async function applyAutoLayout(
   nodes: Node<DesignerNodeData>[],
@@ -100,4 +104,3 @@ export async function applyAutoLayout(
     };
   });
 }
-

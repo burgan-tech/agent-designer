@@ -22,7 +22,7 @@ export const sampleFlow: FlowDefinition = {
     {
       type: 'start',
       id: 'start',
-      position: { x: 100, y: 100 },
+      position: { x: 0, y: 0 },
       properties: {
         title: 'Kredi Başvuru Başlangıç'
       }
@@ -30,7 +30,7 @@ export const sampleFlow: FlowDefinition = {
     {
       type: 'message',
       id: 'welcome_msg',
-      position: { x: 100, y: 200 },
+      position: { x: 0, y: 0 },
       properties: {
         message: 'Kredi başvurunuz için size yardımcı olabilirim. Kaç TL kredi almak istiyorsunuz?'
       }
@@ -38,7 +38,7 @@ export const sampleFlow: FlowDefinition = {
     {
       type: 'input',
       id: 'amount_input',
-      position: { x: 100, y: 300 },
+      position: { x: 0, y: 0 },
       properties: {
         inputType: 'number',
         validation: {
@@ -52,7 +52,7 @@ export const sampleFlow: FlowDefinition = {
     {
       type: 'function',
       id: 'calculate_loan',
-      position: { x: 100, y: 400 },
+      position: { x: 0, y: 0 },
       properties: {
         functionType: 'calculation',
         function: {
@@ -68,7 +68,7 @@ export const sampleFlow: FlowDefinition = {
     {
       type: 'message',
       id: 'result_msg',
-      position: { x: 100, y: 500 },
+      position: { x: 0, y: 0 },
       properties: {
         message: '{{user_amount}} TL kredi için aylık ödemeniz {{monthly_payment}} TL olacaktır.'
       }
@@ -76,7 +76,7 @@ export const sampleFlow: FlowDefinition = {
     {
       type: 'end',
       id: 'end',
-      position: { x: 100, y: 600 },
+      position: { x: 0, y: 0 },
       properties: {
         message: 'Başka bir konuda yardım edebilir miyim?'
       }
