@@ -6,6 +6,7 @@ import { Label } from '../components/ui/label';
 import { Switch } from '../components/ui/switch';
 import { Select } from '../components/ui/select';
 import { Button } from '../components/ui/button';
+import { DecisionTreeForm } from '../components/DecisionTreeForm';
 import { cn } from '../utils/cn';
 
 type PropertyValue = Record<string, any>;
@@ -67,6 +68,18 @@ const renderPrimitiveField = (
           value={value ?? field.options?.[0]?.value ?? ''}
           onChange={(event) => onValueChange(event.target.value)}
           options={field.options ?? []}
+        />
+      );
+    case 'decision_tree':
+      return (
+        <DecisionTreeForm
+          value={value || {
+            question: 'Yeni soru?',
+            options: [
+              { text: 'Seçenek 1', value: 'option1', output: 'output1' }
+            ]
+          }}
+          onChange={onValueChange}
         />
       );
     case 'json':

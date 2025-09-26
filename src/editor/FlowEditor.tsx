@@ -30,6 +30,7 @@ import { Select } from '../components/ui/select';
 import { SchemaForm } from './SchemaForm';
 import { sampleFlow } from '../model/sampleFlow';
 import { applyAutoLayout, isLayoutInitialized } from './layout';
+import { FloatingNodeToolbar } from '../components/FloatingNodeToolbar';
 
 export interface FlowEditorProps {
   initialFlow?: FlowDefinition;
@@ -236,28 +237,6 @@ const FlowMetadataForm: React.FC<{
   );
 };
 
-const NodePalette: React.FC<{ onAddNode: (type: NodeType) => void }> = ({ onAddNode }) => {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Node Kütüphanesi</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {Object.values(nodeSchemas).map((schema) => (
-          <div key={schema.type} className="flex items-center justify-between gap-2">
-            <div>
-              <p className="m-0 text-sm font-semibold">{schema.title}</p>
-              <p className="m-0 text-xs text-slate-500">{schema.description}</p>
-            </div>
-            <Button type="button" variant="ghost" onClick={() => onAddNode(schema.type)}>
-              Ekle
-            </Button>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-};
 
 const NodeInspector: React.FC<{
   node: Node<DesignerNodeData> | null;
@@ -354,18 +333,48 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
     [setEdges]
   );
 
-  const handleAddNode = (type: NodeType) => {
+  const handleAddNode = useCallback((type: NodeType, position?: { x: number; y: number }) => {
     const schema = nodeSchemas[type];
     const id = createUniqueNodeId(type, nodes);
+    const nodePosition = position || { x: 400, y: 100 + nodes.length * 80 };
     const newNode = flowNodeToReactNode({
       id,
       type,
-      position: { x: 400, y: 100 + nodes.length * 80 },
+      position: nodePosition,
       properties: schema.defaultProperties()
     });
     setNodes((current) => [...current, newNode]);
     setSelectedNodeId(id);
-  };
+  }, [nodes, setNodes, setSelectedNodeId]);
+
+  // Drag and drop handlers
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      const nodeType = event.dataTransfer.getData('application/reactflow') as NodeType;
+      console.log('Drop event triggered, nodeType:', nodeType);
+
+      if (!nodeType) {
+        console.log('No nodeType found in drop event');
+        return;
+      }
+
+      const position = reactFlow.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      console.log('Drop position:', position);
+      handleAddNode(nodeType, position);
+    },
+    [reactFlow, handleAddNode]
+  );
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -468,12 +477,11 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
 
   return (
     <div className="flow-editor-shell">
-      <div className="space-y-3 overflow-y-auto pr-2">
-        {showMetadata && (
+      {showMetadata && (
+        <div className="space-y-3 overflow-y-auto pr-2">
           <FlowMetadataForm meta={meta} onMetaChange={(updater) => setMeta((prev) => updater(prev))} />
-        )}
-        <NodePalette onAddNode={handleAddNode} />
-      </div>
+        </div>
+      )}
       <div className="shad-card overflow-hidden">
         <Tabs defaultValue="design">
           <TabsList>
@@ -481,7 +489,10 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
             <TabsTrigger value="json">Flow JSON</TabsTrigger>
           </TabsList>
           <TabsContent value="design">
-            <div ref={flowWrapperRef} style={{ height: '70vh', position: 'relative' }}>
+            <div
+              ref={flowWrapperRef}
+              style={{ height: '70vh', position: 'relative' }}
+            >
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -504,11 +515,14 @@ const FlowEditorContent: React.FC<FlowEditorProps> = ({
                   });
                 }}
                 onPaneClick={() => setContextMenu(null)}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
                 fitView
               >
                 <MiniMap />
                 <Controls />
                 <Background />
+                <FloatingNodeToolbar onAddNode={handleAddNode} />
               </ReactFlow>
               {contextMenu && (
                 <div className="flow-context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}>

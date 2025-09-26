@@ -2,10 +2,12 @@ import React, { useMemo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { DesignerNodeData } from '../editor/types';
 import { Badge } from '../components/ui/badge';
+import { nodeIcons } from '../constants/nodeIcons';
 
 const calculateHandlePosition = (index: number, total: number) => {
-  const spacing = 1 / (total + 1);
-  return `${(index + 1) * spacing * 100}%`;
+  if (total === 1) return '50%';
+  const spacing = 100 / (total + 1);
+  return `${(index + 1) * spacing}%`;
 };
 
 const formatSummaryValue = (value: string) => {
@@ -26,7 +28,10 @@ const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = ({ data }) => {
         <span className="text-xs text-slate-400">{data.id}</span>
       </div>
       <div>
-        <h4 className="m-0 text-base font-semibold">{data.properties?.title ?? data.schema.title}</h4>
+        <h4 className="m-0 text-base font-semibold flex items-center gap-2">
+          <span className="text-lg">{nodeIcons[data.type]}</span>
+          {data.properties?.title ?? data.schema.title}
+        </h4>
         <p className="m-0 text-xs text-slate-500 leading-relaxed">
           {data.schema.description}
         </p>
@@ -45,7 +50,10 @@ const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = ({ data }) => {
           type="target"
           position={Position.Left}
           id={input}
-          style={{ top: calculateHandlePosition(index, data.inputs.length) }}
+          style={{
+            top: calculateHandlePosition(index, data.inputs.length),
+            transform: 'translateY(-50%)'
+          }}
         />
       ))}
       {data.outputs.map((output, index) => (
@@ -54,8 +62,37 @@ const FlowNodeComponent: React.FC<{ data: DesignerNodeData }> = ({ data }) => {
           type="source"
           position={Position.Right}
           id={output}
-          style={{ top: calculateHandlePosition(index, data.outputs.length) }}
+          style={{
+            top: calculateHandlePosition(index, data.outputs.length),
+            transform: 'translateY(-50%)'
+          }}
         />
+      ))}
+      {/* Input Labels */}
+      {data.inputs.map((input, index) => (
+        <div
+          key={`input-label-${input}`}
+          className="handle-label input-label"
+          style={{
+            top: calculateHandlePosition(index, data.inputs.length),
+            transform: 'translateX(-100%) translateY(-50%)'
+          }}
+        >
+          {input}
+        </div>
+      ))}
+      {/* Output Labels */}
+      {data.outputs.map((output, index) => (
+        <div
+          key={`output-label-${output}`}
+          className="handle-label output-label"
+          style={{
+            top: calculateHandlePosition(index, data.outputs.length),
+            transform: 'translateX(100%) translateY(-50%)'
+          }}
+        >
+          {output}
+        </div>
       ))}
     </div>
   );

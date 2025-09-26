@@ -1,0 +1,9 @@
+{
+  "playwright": {
+    "command": "node",
+    "args": ["./node_modules/playwright-mcp/dist/index.js"],
+    "env": {
+      "PLAYWRIGHT_BROWSERS_PATH": "0"
+    }
+  }
+}

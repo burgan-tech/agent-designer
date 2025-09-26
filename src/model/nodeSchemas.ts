@@ -1,6 +1,6 @@
 import { NodeType } from './flow';
 
-export type PrimitiveFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'json';
+export type PrimitiveFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'json' | 'decision_tree';
 
 export interface BaseField {
   name: string;

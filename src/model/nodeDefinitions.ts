@@ -615,8 +615,8 @@ export const nodeSchemas: NodeSchemaMap = {
       { name: 'title', label: 'Title', type: 'text' },
       {
         name: 'tree',
-        label: 'Tree Definition',
-        type: 'json'
+        label: 'Karar Ağacı',
+        type: 'decision_tree'
       }
     ],
     defaultProperties: () => ({
@@ -647,7 +647,25 @@ export const nodeSchemas: NodeSchemaMap = {
       { label: 'Title', value: props.title ?? 'Decision Tree' }
     ],
     computeInputs: () => ['previous'],
-    computeOutputs: () => ['personal_credit', 'vehicle_credit', 'deposit_flow']
+    computeOutputs: (props) => {
+      const extractOutputs = (node: any): string[] => {
+        const outputs: string[] = [];
+        if (node?.options) {
+          for (const option of node.options) {
+            if (option.output) {
+              outputs.push(option.output);
+            }
+            if (option.children) {
+              outputs.push(...extractOutputs(option.children));
+            }
+          }
+        }
+        return outputs;
+      };
+
+      const treeOutputs = extractOutputs(props.tree);
+      return treeOutputs.length > 0 ? treeOutputs : ['default'];
+    }
   }
 };
 
